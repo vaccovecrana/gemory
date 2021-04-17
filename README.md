@@ -1,2 +1,1 @@
-# gemory
-A minimal JavaFx functional replacement for FXML
+[gemory](https://en.wikipedia.org/wiki/Gemory) is a minimal JavaFx functional replacement for FXML.
