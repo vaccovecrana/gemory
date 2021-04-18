@@ -18,8 +18,4 @@ public class HelloFx extends Application {
     stage.show();
   }
 
-  public static void main(String[] args) {
-    launch(args);
-  }
-
 }

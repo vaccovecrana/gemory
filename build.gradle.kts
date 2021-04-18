@@ -12,6 +12,10 @@ configure<io.vacco.oss.gitflow.GsPluginProfileExtension> {
   sharedLibrary(true, false)
 }
 
+configure<io.vacco.cphell.ChPluginExtension> {
+  resourceExclusions.addAll(listOf("module-info.class"))
+}
+
 javafx {
   version = "16"
   modules("javafx.controls", "javafx.fxml") // TODO remove after initial dev done
