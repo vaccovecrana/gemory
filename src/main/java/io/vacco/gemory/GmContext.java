@@ -43,12 +43,6 @@ public class GmContext {
     node(bt);
   }
 
-  public void menuButton(BiConsumer<MenuButton, GmMenuContext<MenuButton>> mbInit) {
-    GmMenuContext<MenuButton> mbc = new GmMenuContext<>(new MenuButton());
-    mbInit.accept(mbc.mb, mbc);
-    node(mbc.mb);
-  }
-
   // TODO MenuBarButton is a whole different thing (menu bar).
 
   public void splitMenuButton(Consumer<GmMenuContext<SplitMenuButton>> mbInit) {
@@ -75,16 +69,16 @@ public class GmContext {
     node(cb);
   }
 
-  public <T> void choiceBox(Consumer<ChoiceBox<T>> cbInit) {
-    ChoiceBox<T> cb = new ChoiceBox<>();
-    cbInit.accept(cb);
-    node(cb);
-  }
-
   public void colorPicker(Consumer<ColorPicker> cpInit) {
     ColorPicker cp = new ColorPicker();
     cpInit.accept(cp);
     node(cp);
+  }
+
+  public void menuButton(BiConsumer<MenuButton, GmMenuContext<MenuButton>> mbInit) {
+    GmMenuContext<MenuButton> mbc = new GmMenuContext<>(new MenuButton());
+    mbInit.accept(mbc.mb, mbc);
+    node(mbc.mb);
   }
 
   public <T> void comboBox(Consumer<ComboBox<T>> cbInit) {
@@ -93,7 +87,13 @@ public class GmContext {
     node(cb);
   }
 
-  public void datPicker(Consumer<DatePicker> dpInit) {
+  public <T> void choiceBox(Consumer<ChoiceBox<T>> cbInit) {
+    ChoiceBox<T> cb = new ChoiceBox<>();
+    cbInit.accept(cb);
+    node(cb);
+  }
+
+  public void datePicker(Consumer<DatePicker> dpInit) {
     DatePicker dp = new DatePicker();
     dpInit.accept(dp);
     node(dp);
@@ -155,6 +155,12 @@ public class GmContext {
   public void tilePane(BiConsumer<TilePane, GmContext> init) { pane(TilePane::new, init); }
   public void stackPane(BiConsumer<StackPane, GmContext> init) { pane(StackPane::new, init); }
   public void borderPane(BiConsumer<BorderPane, GmContext> init) { pane(BorderPane::new, init); }
+
+  public void tabPane(BiConsumer<TabPane, GmTabContext> init) {
+    GmTabContext tc = new GmTabContext();
+    init.accept(tc.pane, tc);
+    node(tc.pane);
+  }
 
   public void scrollPane(BiConsumer<ScrollPane, GmContext> init) {
     GmContext c = new GmContext();
