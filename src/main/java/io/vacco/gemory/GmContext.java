@@ -2,8 +2,11 @@ package io.vacco.gemory;
 
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.*;
 import javafx.scene.layout.*;
 
+import java.io.*;
+import java.net.URL;
 import java.util.*;
 import java.util.function.*;
 
@@ -139,6 +142,23 @@ public class GmContext {
     Separator s = new Separator();
     spInit.accept(s);
     node(s);
+  }
+
+  private void imageView(InputStream is, Consumer<ImageView> ivInit) {
+    Image i = new Image(is);
+    ImageView iv = new ImageView(i);
+    ivInit.accept(iv);
+    node(iv);
+  }
+
+  public void imageView(URL input, Consumer<ImageView> ivInit) {
+    try { imageView(input.openStream(), ivInit); }
+    catch (IOException ioe) { throw new IllegalArgumentException(ioe); }
+  }
+
+  public void imageView(File input, Consumer<ImageView> ivInit) {
+    try { imageView(new FileInputStream(input), ivInit); }
+    catch (FileNotFoundException fne) { throw new IllegalArgumentException(fne); }
   }
 
   private <T extends Pane> void pane(Supplier<T> ps, BiConsumer<T, GmContext> init) {

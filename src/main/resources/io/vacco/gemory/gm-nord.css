@@ -1,0 +1,92 @@
+.root {
+  -nord-deep-dark: #242931;
+
+  /* Polar night */
+  -nord0: #2E3440;
+  -nord1: #3B4252;
+  -nord2: #434C5E;
+  -nord3: #4C566A;
+
+  /* Snow storm */
+  -nord4: #D8DEE9;
+  -nord5: #E5E9F0;
+  -nord6: #ECEFF4;
+
+  /* Frost */
+  -nord7:  #8FBCBB;
+  -nord8:  #88C0D0;
+  -nord9:  #81A1C1;
+  -nord10: #5E81AC;
+
+  /* Aurora */
+  -nord11: #BF616A;
+  -nord12: #D08770;
+  -nord13: #EBCB8B;
+  -nord14: #A3BE8C;
+  -nord15: #B48EAD;
+
+  -fx-background: -nord-deep-dark;
+  -fx-color: -nord1;
+
+  -fx-base: derive(-nord10, -35%);
+  -fx-accent: -fx-base;
+  -fx-focus-color: -fx-base;
+
+  /* text fields and table rows background */
+  -fx-control-inner-background: -nord0;
+  -fx-control-inner-background-alt: derive(-fx-control-inner-background, 2.5%);
+
+  -fx-shadow-highlight-color: -nord-deep-dark;
+  -fx-outer-border: -nord-deep-dark;
+  -fx-inner-border: -nord-deep-dark;
+
+  -fx-light-text-color: -nord6;
+  -fx-mid-text-color: -nord3;
+  -fx-dark-text-color: -nord1;
+
+  -fx-selection-bar-non-focused: -nord2;
+}
+
+.button,
+.toggle-button,
+.menu-button,
+.choice-box,
+.color-picker.split-button > .color-picker-label,
+.combo-box-base,
+.combo-box-base:editable > .arrow-button {
+  -fx-background-radius: 8px;
+}
+
+.button, .toggle-button {
+  -fx-padding: 0.7em 1.2em;
+}
+
+.menu-button,
+.choice-box,
+.combo-box-base,
+.combo-box-base:editable > .arrow-button {
+  -fx-padding: 0.3em 0.3em;
+}
+
+.text-input {
+  -fx-prompt-text-fill: derive(-fx-control-inner-background, +50%);
+}
+
+.text-input:focused {
+  -fx-prompt-text-fill: transparent;
+}
+
+.scroll-bar > .increment-button > .increment-arrow,
+.scroll-bar > .decrement-button > .decrement-arrow {
+  -fx-background-color: -fx-mark-highlight-color, -nord6;
+}
+
+.scroll-bar > .increment-button:hover > .increment-arrow,
+.scroll-bar > .decrement-button:hover > .decrement-arrow {
+  -fx-background-color: -fx-mark-highlight-color, -nord6;
+}
+
+.scroll-bar > .increment-button:pressed > .increment-arrow,
+.scroll-bar > .decrement-button:pressed > .decrement-arrow {
+  -fx-background-color: -fx-mark-highlight-color, -nord6;
+}

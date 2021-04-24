@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 import org.junit.runner.RunWith;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 import static io.vacco.gemory.GmContext.root;
 import static j8spec.J8Spec.*;
@@ -21,35 +22,40 @@ public class GmContextSpec {
   public static class ViewFoo extends StackPane {
     public ViewFoo() {
       Node root = root(r -> r.scrollPane((sp, c) -> {
-        c.vBox((v, vc) -> {
-          vc.label(lb -> lb.setText("Hello World"));
-          vc.textField(tf -> tf.setText("How do we turn this into a controlled component?"));
-          vc.button(bt -> bt.setText("Submit"));
-          vc.menuButton((mb, mbc) -> {
+        sp.setFitToWidth(true);
+        c.vBox((v, $) -> {
+          $.label(lb -> lb.setText("Hello World"));
+          $.textField(tf -> tf.setText("How do we turn this into a controlled component?"));
+          $.button(bt -> bt.setText("Submit"));
+          $.menuButton((mb, mbc) -> {
             mb.setText("Menu button");
             mbc.item(mi -> mi.setText("Menu button item"));
           });
-          vc.splitMenuButton(mb -> {
+          $.splitMenuButton(mb -> {
             mb.mb.setText("Split Menu button");
             mb.item(mi -> mi.setText("Split menu item"));
           });
-          vc.label(lb -> lb.setText("A label"));
-          vc.separator(s -> s.orientationProperty().setValue(Orientation.HORIZONTAL));
-          vc.checkBox(cb -> cb.setText("Combo box"));
-          vc.choiceBox(cb -> cb.setValue("Choice box"));
-          vc.comboBox(cb -> cb.setPromptText("Combo box"));
-          vc.textArea(ta -> ta.setPromptText("Text area..."));
-          vc.toggleButton(tb -> tb.setText("Toggle button"));
-          vc.slider(sl -> sl.valueProperty().setValue(50));
-          vc.spinner(sn -> sn.setPromptText("Spinner??"));
-          vc.datePicker(dp -> dp.valueProperty().setValue(LocalDate.now()));
-          vc.hyperLink(hl -> hl.setText("https://vacco.io"));
-          vc.passwordField(pf -> pf.setPromptText("Password input"));
-          vc.progressBar(pb -> pb.progressProperty().setValue(50));
-          vc.progressIndicator(pi -> pi.progressProperty().setValue(0));
-          vc.radioButton(rb -> rb.setText("Radio button"));
-          vc.scrollBar(sb -> sb.setValue(50));
-          vc.colorPicker(cp -> cp.setValue(Color.ALICEBLUE));
+          $.label(lb -> lb.setText("A label"));
+          $.separator(s -> s.orientationProperty().setValue(Orientation.HORIZONTAL));
+          $.checkBox(cb -> cb.setText("Check box"));
+          $.choiceBox(cb -> cb.setValue("Choice box"));
+          $.comboBox(cb -> cb.setPromptText("Combo box"));
+          $.textArea(ta -> ta.setPromptText("Text area..."));
+          $.toggleButton(tb -> tb.setText("Toggle button"));
+          $.slider(sl -> sl.valueProperty().setValue(50));
+          $.spinner(sn -> sn.setPromptText("Spinner"));
+          $.datePicker(dp -> dp.valueProperty().setValue(LocalDate.now()));
+          $.hyperLink(hl -> hl.setText("https://vacco.io"));
+          $.passwordField(pf -> pf.setPromptText("Password input"));
+          $.progressBar(pb -> pb.progressProperty().setValue(50));
+          $.progressIndicator(pi -> pi.progressProperty().setValue(0));
+          $.radioButton(rb -> rb.setText("Radio button"));
+          $.scrollBar(sb -> sb.setValue(50));
+          $.colorPicker(cp -> cp.setValue(Color.ALICEBLUE));
+          $.imageView(Objects.requireNonNull(GmContextSpec.class.getResource("/gir-dog.png")), iv -> {
+            iv.maxWidth(266);
+            iv.maxHeight(333);
+          });
         });
       }));
       getChildren().add(root);
