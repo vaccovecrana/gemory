@@ -1,8 +1,7 @@
-package io.vacco.gemory;
+package io.vacco.gemory.context;
 
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
-
 import java.util.function.Consumer;
 
 public class GmMenuContext<T extends MenuButton> {

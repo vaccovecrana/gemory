@@ -1,10 +1,10 @@
-package io.vacco.gemory;
+package io.vacco.gemory.context;
 
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
-import static io.vacco.gemory.GmContext.*;
+import static io.vacco.gemory.context.GmContext.*;
 
 public class GmStyleEditor extends StackPane {
 

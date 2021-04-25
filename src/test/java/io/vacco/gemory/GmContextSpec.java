@@ -1,5 +1,6 @@
 package io.vacco.gemory;
 
+import io.vacco.gemory.context.GmStyleEditor;
 import j8spec.junit.J8SpecRunner;
 import javafx.application.Application;
 import javafx.geometry.Orientation;
@@ -13,7 +14,7 @@ import org.junit.runner.RunWith;
 import java.time.LocalDate;
 import java.util.Objects;
 
-import static io.vacco.gemory.GmContext.root;
+import static io.vacco.gemory.context.GmContext.root;
 import static j8spec.J8Spec.*;
 
 @RunWith(J8SpecRunner.class)

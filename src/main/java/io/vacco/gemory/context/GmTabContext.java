@@ -1,4 +1,4 @@
-package io.vacco.gemory;
+package io.vacco.gemory.context;
 
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
