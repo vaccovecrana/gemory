@@ -4,8 +4,7 @@ import io.vacco.gemory.context.GmStyleEditor;
 import j8spec.junit.J8SpecRunner;
 import javafx.application.Application;
 import javafx.geometry.Orientation;
-import javafx.scene.Node;
-import javafx.scene.Scene;
+import javafx.scene.*;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -79,4 +78,5 @@ public class GmContextSpec {
       Application.launch(SpecShell.class);
     });
   }
+
 }

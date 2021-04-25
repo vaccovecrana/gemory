@@ -55,4 +55,5 @@ public final class Store<A extends Enum<?>, S> {
     this.subscribers.add(r);
     return () -> subscribers.remove(r);
   }
+
 }

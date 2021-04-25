@@ -19,6 +19,20 @@ public class ReduxSpec {
     }
   }
 
+  public static final Middleware<CounterActionType, Integer> print1 = ((store, action, next) -> {
+    System.out.println("Print 1 start");
+    action = next.apply(action);
+    System.out.println("Print 1 end");
+    return action;
+  });
+
+  public static final Middleware<CounterActionType, Integer> print2 = ((store, action, next) -> {
+    System.out.println("Print 2 start");
+    action = next.apply(action);
+    System.out.println("Print 2 end");
+    return action;
+  });
+
   static {
     it("Logs a counter's increase/decrease actions", () -> {
       Store<CounterActionType, Integer> counterStore = new Store<>(
@@ -31,10 +45,14 @@ public class ReduxSpec {
               }
             }
             return currentState;
-          }, 0, new Logger<>(a -> System.out.printf("%s%n", a), System.out::println));
+          }, 0,
+          new Logger<>(a -> System.out.printf("%s%n", a), System.out::println),
+          print1, print2
+      );
 
       counterStore.dispatch(new CounterAction(CounterActionType.INCREASE, 1));
       counterStore.dispatch(new CounterAction(CounterActionType.DECREASE, 1));
     });
   }
+
 }
