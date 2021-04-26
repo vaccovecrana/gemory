@@ -1,5 +1,6 @@
 package io.vacco.gemory;
 
+import com.esotericsoftware.jsonbeans.Json;
 import io.vacco.gemory.redux.*;
 import j8spec.annotation.DefinedOrder;
 import j8spec.junit.J8SpecRunner;
@@ -13,6 +14,8 @@ import static j8spec.J8Spec.*;
 @DefinedOrder
 @RunWith(J8SpecRunner.class)
 public class ReduxSpec {
+
+  private static final Json j = new Json();
 
   public enum CounterActionType {Increase, Decrease}
 
@@ -32,7 +35,11 @@ public class ReduxSpec {
     return action;
   });
 
-  public static final Middleware<CounterActionType, Integer> logger = new Logger<>(a -> System.out.printf("%s%n", a), System.out::println);
+  public static final Middleware<CounterActionType, Integer> logger = new Logger<>(a -> System.out.printf("%s%n", a), ReduxSpec::print);
+
+  private static void print(Object o) {
+    System.out.println(j.toJson(o));
+  }
 
   static {
     it("Logs a counter's increase/decrease actions", () -> {
@@ -76,7 +83,7 @@ public class ReduxSpec {
   public static final class SelectBreadAction extends Action<SandwichActionType, Bread> {}
 
   public static final Middleware<SandwichActionType, Sandwich> sandwichLogger =
-      new Logger<>(a -> System.out.printf("%s%n", a), System.out::println);
+      new Logger<>(a -> System.out.printf("%s%n", a), ReduxSpec::print);
 
   static {
     it("Makes a sandwich", () -> {
@@ -117,6 +124,7 @@ public class ReduxSpec {
       for (Ingredient ing : new Ingredient[]{new Beef(), new Mayo(), new Onion(), new Lettuce(), new Tomato(), new Ketchup()}) {
         sandwichStore.dispatch(new AddIngredientAction().withType(SandwichActionType.AddIngredient).withPayload(ing));
       }
+      sandwichStore.dispatch(new SelectBreadAction().withType(SandwichActionType.SelectBread).withPayload(Bread.Wheat));
 
       System.out.println();
     });

@@ -12,6 +12,10 @@ configure<io.vacco.oss.gitflow.GsPluginProfileExtension> {
   sharedLibrary(true, false)
 }
 
+dependencies {
+  testImplementation("io.vacco.jsonbeans:jsonbeans:1.0.0")
+}
+
 configure<io.vacco.cphell.ChPluginExtension> {
   resourceExclusions.addAll(listOf("module-info.class"))
 }
