@@ -3,16 +3,17 @@ package io.vacco.gemory.redux;
 /** @param <T> Defines all possible actions for given store. */
 public class Action<T extends Enum<?>, V> {
 
-  public final T type;
-  public final V payload;
+  public T type;
+  public V payload;
 
-  public Action(T type, V value) {
+  public Action<T, V> withType(T type) {
     this.type = type;
-    this.payload = value;
+    return this;
   }
 
-  public Action(T type) {
-    this(type, null);
+  public Action<T, V> withPayload(V payload) {
+    this.payload = payload;
+    return this;
   }
 
   @Override public String toString() { return type.toString(); }
