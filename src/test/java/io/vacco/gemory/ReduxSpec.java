@@ -124,9 +124,9 @@ public class ReduxSpec {
       for (Ingredient ing : new Ingredient[]{new Beef(), new Mayo(), new Onion(), new Lettuce(), new Tomato(), new Ketchup()}) {
         sandwichStore.dispatch(new AddIngredientAction().withType(SandwichActionType.AddIngredient).withPayload(ing));
       }
-      sandwichStore.dispatch(new SelectBreadAction().withType(SandwichActionType.SelectBread).withPayload(Bread.Wheat));
+      Sandwich lastState = sandwichStore.dispatch(new SelectBreadAction().withType(SandwichActionType.SelectBread).withPayload(Bread.Wheat));
 
-      System.out.println();
+      print(lastState);
     });
   }
 

@@ -14,7 +14,7 @@ public interface Middleware<A extends Enum<?>, S> {
    * <ul>
    *   <li>Do nothing.</li>
    *   <li>Transform <code>action</code>.</li>
-   *   <li>Delegate to the <code>next</code> middleware.</li>
+   *   <li>Delegate <code>action</code> to the <code>next</code> middleware.</li>
    * </ul>
    *
    * @param store  allows for optional action dispatching (e. g. for asynchronous processing).
