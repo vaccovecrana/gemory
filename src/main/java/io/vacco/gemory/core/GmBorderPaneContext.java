@@ -1,4 +1,4 @@
-package io.vacco.gemory.context;
+package io.vacco.gemory.core;
 
 import javafx.scene.layout.BorderPane;
 import java.util.function.Consumer;
