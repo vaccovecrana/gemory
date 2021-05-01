@@ -15,4 +15,5 @@ public class GmTabContext {
     t.setContent(c.nodes.get(0));
     pane.getTabs().add(t);
   }
+
 }

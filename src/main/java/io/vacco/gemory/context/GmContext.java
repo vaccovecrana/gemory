@@ -46,14 +46,6 @@ public class GmContext {
     node(bt);
   }
 
-  // TODO MenuBarButton is a whole different thing (menu bar).
-
-  public void splitMenuButton(Consumer<GmMenuContext<SplitMenuButton>> mbInit) {
-    GmMenuContext<SplitMenuButton> mbc = new GmMenuContext<>(new SplitMenuButton());
-    mbInit.accept(mbc);
-    node(mbc.mb);
-  }
-
   public void slider(Consumer<Slider> sInit) {
     Slider s = new Slider();
     sInit.accept(s);
@@ -78,10 +70,22 @@ public class GmContext {
     node(cp);
   }
 
-  public void menuButton(BiConsumer<MenuButton, GmMenuContext<MenuButton>> mbInit) {
-    GmMenuContext<MenuButton> mbc = new GmMenuContext<>(new MenuButton());
-    mbInit.accept(mbc.mb, mbc);
-    node(mbc.mb);
+  public void menuButton(BiConsumer<MenuButton, GmMenus.GmMenuButtonContext<MenuButton>> mbInit) {
+    GmMenus.GmMenuButtonContext<MenuButton> mbc = new GmMenus.GmMenuButtonContext<>(new MenuButton());
+    mbInit.accept(mbc.menuButton, mbc);
+    node(mbc.menuButton);
+  }
+
+  public void splitMenuButton(Consumer<GmMenus.GmMenuButtonContext<SplitMenuButton>> mbInit) {
+    GmMenus.GmMenuButtonContext<SplitMenuButton> mbc = new GmMenus.GmMenuButtonContext<>(new SplitMenuButton());
+    mbInit.accept(mbc);
+    node(mbc.menuButton);
+  }
+
+  public void menuBar(Consumer<GmMenus.GmMenuBarContext> mInit) {
+    GmMenus.GmMenuBarContext mc = new GmMenus.GmMenuBarContext();
+    mInit.accept(mc);
+    node(mc.menuBar);
   }
 
   public <T> void comboBox(Consumer<ComboBox<T>> cbInit) {
@@ -174,7 +178,12 @@ public class GmContext {
   public void flowPane(BiConsumer<FlowPane, GmContext> init) { pane(FlowPane::new, init); }
   public void tilePane(BiConsumer<TilePane, GmContext> init) { pane(TilePane::new, init); }
   public void stackPane(BiConsumer<StackPane, GmContext> init) { pane(StackPane::new, init); }
-  public void borderPane(BiConsumer<BorderPane, GmContext> init) { pane(BorderPane::new, init); }
+
+  public void borderPane(BiConsumer<BorderPane, GmBorderPaneContext> init) {
+    GmBorderPaneContext bpc = new GmBorderPaneContext();
+    init.accept(bpc.borderPane, bpc);
+    node(bpc.borderPane);
+  }
 
   public void tabPane(BiConsumer<TabPane, GmTabContext> init) {
     GmTabContext tc = new GmTabContext();
@@ -189,6 +198,8 @@ public class GmContext {
     sp.setContent(c.nodes.get(0));
     node(sp);
   }
+
+  // TODO missing gridPane support.
 
   public static Node root(Consumer<GmContext> init) {
     GmContext c = new GmContext();

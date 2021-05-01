@@ -22,62 +22,78 @@ public class GmContextSpec {
 
   public static class ViewFoo extends StackPane {
     public ViewFoo() {
-      Node lol = root(r -> r.tabPane((tp, tpc) -> {
-        tpc.tab((tab, tc) -> {
-          tab.setText("Tab 0");
-          tc.vBox((vb, $) -> {
-            $.textField(tf -> tf.setText("How do we turn this into a controlled component?"));
-            $.button(bt -> bt.setText("Submit"));
-            $.menuButton((mb, mbc) -> {
-              mb.setText("Menu button");
-              mbc.item(mi -> mi.setText("Menu button item"));
-            });
-            $.splitMenuButton(mb -> {
-              mb.mb.setText("Split Menu button");
-              mb.item(mi -> mi.setText("Split menu item"));
-            });
-            $.label(lb -> lb.setText("A label"));
-          });
-        });
+      Node root = root(r -> r.borderPane((bp, bpc) -> {
 
-        tpc.tab((tab, tc) -> {
-          tab.setText("Tab 1");
-          tc.vBox((vb, $) -> {
-            $.label(lb -> lb.setText("Hello World"));
-            $.separator(s -> s.orientationProperty().setValue(Orientation.HORIZONTAL));
-            $.checkBox(cb -> cb.setText("Check box"));
-            $.choiceBox(cb -> cb.setValue("Choice box"));
-            $.comboBox(cb -> cb.setPromptText("Combo box"));
-            $.textArea(ta -> ta.setPromptText("Text area..."));
-            $.toggleButton(tb -> tb.setText("Toggle button"));
-            $.slider(sl -> sl.valueProperty().setValue(50));
-            $.spinner(sn -> sn.setPromptText("Spinner"));
-            $.datePicker(dp -> dp.valueProperty().setValue(LocalDate.now()));
-            $.hyperLink(hl -> hl.setText("https://vacco.io"));
+        bpc.top(tc -> tc.menuBar(mbc -> {
+          mbc.menu((m, mc) -> {
+            m.setText("Menu 0");
+            mc.item(it -> it.setText("Item 0"));
+            mc.item(it -> it.setText("Item 1"));
           });
-        });
+          mbc.menu((m, mc) -> {
+            m.setText("Menu 1");
+            mc.item(it -> it.setText("Item 2"));
+            mc.item(it -> it.setText("Item 3"));
+          });
+        }));
 
-        tpc.tab((tab, tc) -> {
-          tab.setText("Tab 2");
-          tc.scrollPane((sp, spc) -> {
-            sp.setFitToWidth(true);
-            spc.vBox((v, $) -> {
-              $.passwordField(pf -> pf.setPromptText("Password input"));
-              $.progressBar(pb -> pb.progressProperty().setValue(50));
-              $.progressIndicator(pi -> pi.progressProperty().setValue(0));
-              $.radioButton(rb -> rb.setText("Radio button"));
-              $.scrollBar(sb -> sb.setValue(50));
-              $.colorPicker(cp -> cp.setValue(Color.ALICEBLUE));
-              $.imageView(Objects.requireNonNull(GmContextSpec.class.getResource("/gir-dog.png")), iv -> {
-                iv.maxWidth(266);
-                iv.maxHeight(333);
+        bpc.center(cc -> cc.tabPane((tp, tpc) -> {
+          tpc.tab((tab, tc) -> {
+            tab.setText("Tab 0");
+            tc.vBox((vb, $) -> {
+              $.textField(tf -> tf.setText("text field content"));
+              $.button(bt -> bt.setText("Submit"));
+              $.menuButton((mb, mbc) -> {
+                mb.setText("Menu button");
+                mbc.item(mi -> mi.setText("Menu button item"));
+              });
+              $.splitMenuButton(mb -> {
+                mb.menuButton.setText("Split Menu button");
+                mb.item(mi -> mi.setText("Split menu item"));
+              });
+              $.label(lb -> lb.setText("A label"));
+            });
+          });
+
+          tpc.tab((tab, tc) -> {
+            tab.setText("Tab 1");
+            tc.vBox((vb, $) -> {
+              $.label(lb -> lb.setText("Hello World"));
+              $.separator(s -> s.orientationProperty().setValue(Orientation.HORIZONTAL));
+              $.checkBox(cb -> cb.setText("Check box"));
+              $.choiceBox(cb -> cb.setValue("Choice box"));
+              $.comboBox(cb -> cb.setPromptText("Combo box"));
+              $.textArea(ta -> ta.setPromptText("Text area..."));
+              $.toggleButton(tb -> tb.setText("Toggle button"));
+              $.slider(sl -> sl.valueProperty().setValue(50));
+              $.spinner(sn -> sn.setPromptText("Spinner"));
+              $.datePicker(dp -> dp.valueProperty().setValue(LocalDate.now()));
+              $.hyperLink(hl -> hl.setText("https://vacco.io"));
+            });
+          });
+
+          tpc.tab((tab, tc) -> {
+            tab.setText("Tab 2");
+            tc.scrollPane((sp, spc) -> {
+              sp.setFitToWidth(true);
+              spc.vBox((v, $) -> {
+                $.passwordField(pf -> pf.setPromptText("Password input"));
+                $.progressBar(pb -> pb.progressProperty().setValue(50));
+                $.progressIndicator(pi -> pi.progressProperty().setValue(0));
+                $.radioButton(rb -> rb.setText("Radio button"));
+                $.scrollBar(sb -> sb.setValue(50));
+                $.colorPicker(cp -> cp.setValue(Color.ALICEBLUE));
+                $.imageView(Objects.requireNonNull(GmContextSpec.class.getResource("/gir-dog.png")), iv -> {
+                  iv.maxWidth(266);
+                  iv.maxHeight(333);
+                });
               });
             });
           });
-        });
+        }));
       }));
 
-      getChildren().add(lol);
+      getChildren().add(root);
     }
   }
 
