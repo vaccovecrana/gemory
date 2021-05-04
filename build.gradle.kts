@@ -1,6 +1,6 @@
 plugins {
   id("io.vacco.oss.gitflow") version "0.9.7"
-  id("org.openjfx.javafxplugin") version "0.0.9"
+  id("org.openjfx.javafxplugin") version "0.0.10"
 }
 
 group = "io.vacco.gemory"
@@ -22,5 +22,5 @@ configure<io.vacco.cphell.ChPluginExtension> {
 
 javafx {
   version = "16"
-  modules("javafx.controls", "javafx.fxml") // TODO remove after initial dev done
+  modules("javafx.controls")
 }
