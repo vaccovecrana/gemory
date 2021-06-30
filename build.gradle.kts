@@ -1,5 +1,5 @@
 plugins {
-  id("io.vacco.oss.gitflow") version "0.9.7"
+  id("io.vacco.oss.gitflow") version "0.9.8"
   id("org.openjfx.javafxplugin") version "0.0.10"
 }
 
