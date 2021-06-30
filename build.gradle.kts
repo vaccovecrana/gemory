@@ -9,7 +9,7 @@ version = "0.1.0"
 configure<io.vacco.oss.gitflow.GsPluginProfileExtension> {
   addJ8Spec()
   addClasspathHell()
-  sharedLibrary(true, true)
+  sharedLibrary(true, false)
 }
 
 dependencies {
