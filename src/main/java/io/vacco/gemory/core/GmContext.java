@@ -183,6 +183,7 @@ public class GmContext {
     GmContext c = new GmContext();
     SplitPane sp = new SplitPane();
     init.accept(sp, c);
+    sp.getItems().addAll(c.nodes);
     node(sp);
   }
 
