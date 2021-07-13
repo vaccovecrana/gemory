@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "io.vacco.gemory"
-version = "0.1.0"
+version = "0.1.1"
 
 configure<io.vacco.oss.gitflow.GsPluginProfileExtension> {
   addJ8Spec()

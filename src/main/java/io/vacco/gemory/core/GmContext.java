@@ -179,6 +179,13 @@ public class GmContext {
   public void tilePane(BiConsumer<TilePane, GmContext> init) { pane(TilePane::new, init); }
   public void stackPane(BiConsumer<StackPane, GmContext> init) { pane(StackPane::new, init); }
 
+  public void splitPane(BiConsumer<SplitPane, GmContext> init) {
+    GmContext c = new GmContext();
+    SplitPane sp = new SplitPane();
+    init.accept(sp, c);
+    node(sp);
+  }
+
   public void borderPane(BiConsumer<BorderPane, GmBorderPaneContext> init) {
     GmBorderPaneContext bpc = new GmBorderPaneContext();
     init.accept(bpc.borderPane, bpc);
