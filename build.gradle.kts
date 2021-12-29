@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "io.vacco.gemory"
-version = "0.1.1"
+version = "0.2.0"
 
 configure<io.vacco.oss.gitflow.GsPluginProfileExtension> {
   addJ8Spec()
@@ -13,7 +13,8 @@ configure<io.vacco.oss.gitflow.GsPluginProfileExtension> {
 }
 
 dependencies {
-  testImplementation("io.vacco.jsonbeans:jsonbeans:1.0.0")
+  implementation("org.slf4j:slf4j-api:1.7.30")
+  testImplementation("io.vacco.shax:shax:1.7.30.0.0.7")
 }
 
 configure<io.vacco.cphell.ChPluginExtension> {

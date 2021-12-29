@@ -12,13 +12,13 @@ public class GmStyleEditor extends StackPane {
 
     pane.getStyleClass().add("root");
 
-    getChildren().add(root(r -> r.borderPane((bp, ctx) -> {
-      ctx.top(tc -> tc.vBox((vb, vbc) -> {
-        vbc.hBox((hb, hbc) -> {
+    getChildren().add(root($ -> $.borderPane((bp, bp$) -> {
+      bp$.top(t$ -> t$.vBox((vb, vb$) -> {
+        vb$.hBox((hb, hb$) -> {
           TextField cssUrl = new TextField();
           cssUrl.setPromptText("Input CSS URL");
-          hbc.node(cssUrl);
-          hbc.button(bt -> {
+          hb$.node(cssUrl);
+          hb$.button(bt -> {
             bt.setText("Apply");
             bt.setOnAction(e -> {
               pane.getStylesheets().clear();
@@ -26,9 +26,9 @@ public class GmStyleEditor extends StackPane {
             });
           });
         });
-        vbc.separator(s -> {});
+        vb$.separator(s -> {});
       }));
-      ctx.center(cc -> cc.node(pane));
+      bp$.center(c$ -> c$.node(pane));
     })));
   }
 

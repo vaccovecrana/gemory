@@ -1,16 +1,20 @@
 package io.vacco.gemory.core;
 
-import javafx.scene.Node;
+import io.vacco.gemory.util.GmReflect;
+import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.layout.*;
 
 import java.io.*;
-import java.net.URL;
+import java.net.*;
 import java.util.*;
 import java.util.function.*;
 
 public class GmContext {
+
+  private Consumer<Scene> onMountCons;
+  private Runnable onUnmountRun;
 
   public final List<Node> nodes = new ArrayList<>();
 
@@ -148,27 +152,49 @@ public class GmContext {
     node(s);
   }
 
-  private void imageView(InputStream is, Consumer<ImageView> ivInit) {
-    Image i = new Image(is);
+  public <T> void listView(Consumer<ListView<T>> lvInit) {
+    ListView<T> lv = new ListView<>();
+    lvInit.accept(lv);
+    node(lv);
+  }
+
+  private void imageView(String url, boolean background, Consumer<ImageView> ivInit) {
+    Image i = new Image(url, background);
     ImageView iv = new ImageView(i);
     ivInit.accept(iv);
     node(iv);
   }
 
-  public void imageView(URL input, Consumer<ImageView> ivInit) {
-    try { imageView(input.openStream(), ivInit); }
-    catch (IOException ioe) { throw new IllegalArgumentException(ioe); }
+  public void imageView(URL input, boolean background, Consumer<ImageView> ivInit) {
+    imageView(input.toString(), background, ivInit);
   }
 
-  public void imageView(File input, Consumer<ImageView> ivInit) {
-    try { imageView(new FileInputStream(input), ivInit); }
-    catch (FileNotFoundException fne) { throw new IllegalArgumentException(fne); }
+  public void imageView(File input, boolean background, Consumer<ImageView> ivInit) {
+    try { imageView(input.toURI().toURL().toString(), background, ivInit); }
+    catch (MalformedURLException fne) { throw new IllegalArgumentException(fne); }
+  }
+
+  public void onMount(Consumer<Scene> sc) {
+    this.onMountCons = sc;
+  }
+
+  public void onUnmount(Runnable r) {
+    this.onUnmountRun = r;
   }
 
   private <T extends Pane> void pane(Supplier<T> ps, BiConsumer<T, GmContext> init) {
-    GmContext c = new GmContext();
     T p = ps.get();
+    GmContext c = new GmContext();
     init.accept(p, c);
+    GmReflect.scenePropOf(p).ifPresent(spo -> {
+      spo.addListener((obs, ov, nv) -> {
+        if (nv != null && c.onMountCons != null) {
+          c.onMountCons.accept(nv);
+        } else if (nv == null && c.onUnmountRun != null) {
+          c.onUnmountRun.run();
+        }
+      });
+    });
     p.getChildren().addAll(c.nodes);
     node(p);
   }
@@ -207,13 +233,12 @@ public class GmContext {
     node(sp);
   }
 
-  // TODO missing gridPane support.
-
   public static Node root(Consumer<GmContext> init) {
     GmContext c = new GmContext();
     init.accept(c);
     return c.nodes.get(0);
   }
 
-  /* TODO: ListView, Pagination, TableView, TableColumn */
+  /* TODO: Pagination, TableView, TableColumn */
+
 }
