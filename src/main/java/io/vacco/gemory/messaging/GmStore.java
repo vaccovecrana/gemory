@@ -44,15 +44,17 @@ public class GmStore {
         p.apply(act);
       }
       List<WeakReference<Consumer<GmAction<?>>>> cl = actIdx.get(act.getClass());
-      if (cl != null) {
+      if (cl != null && !cl.isEmpty()) {
         for (WeakReference<Consumer<GmAction<?>>> cRef : cl) {
           Consumer<GmAction<?>> c = cRef.get();
           if (c != null) {
             c.accept(act);
           } else if (log.isDebugEnabled()) {
-            log.debug("Reference [{}] has been invalidated.", cRef);
+            log.debug("Reference [{}] for action [{}] has been invalidated.", cRef, act.getClass().getSimpleName());
           }
         }
+      } else if (log.isDebugEnabled()) {
+        log.debug("No listeners found for action [{}]", act.getClass().getSimpleName());
       }
     } catch (Exception e) {
       exceptionHandler.accept(e);
