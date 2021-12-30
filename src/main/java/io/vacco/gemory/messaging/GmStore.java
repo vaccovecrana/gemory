@@ -19,11 +19,11 @@ public class GmStore {
   private static Consumer<Throwable> exceptionHandler = e -> log.error("Action processing cycle error.", e);
 
   @SuppressWarnings("unchecked")
-  public static <A extends GmAction<?>> void on(Class<A> pattern, Consumer<A> c) {
+  public static <A extends GmAction<?>> Consumer<A> on(Class<A> pattern, Consumer<A> c) {
     log.info("Adding action listener: [{}] -> [{}]", pattern.getSimpleName(), c);
-    Consumer<GmAction<?>> gc = (Consumer<GmAction<?>>) c;
-    WeakReference<Consumer<GmAction<?>>> wc = new WeakReference<>(gc);
+    WeakReference<Consumer<GmAction<?>>> wc = new WeakReference<>((Consumer<GmAction<?>>) c);
     actIdx.computeIfAbsent(pattern, p -> new ArrayList<>()).add(wc);
+    return c;
   }
 
   @SuppressWarnings("unchecked")

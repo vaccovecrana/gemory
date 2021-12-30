@@ -15,9 +15,7 @@ import org.slf4j.*;
 
 import java.awt.*;
 import java.time.LocalDate;
-import java.util.Objects;
-import java.util.Random;
-import java.util.function.Consumer;
+import java.util.*;
 
 import static io.vacco.shax.logging.ShOption.*;
 import static io.vacco.gemory.messaging.GmStore.*;
@@ -29,13 +27,13 @@ public class GmContextSpec {
 
   static {
     setSysProp(IO_VACCO_SHAX_DEVMODE, "true");
+    setSysProp(IO_VACCO_SHAX_LOGLEVEL, "debug");
   }
 
   private static final Logger log = LoggerFactory.getLogger(GmContextSpec.class);
 
   public static class FooAction extends GmAction<String> {}
   public static class MomoAction extends GmAction<Boolean> {}
-
   public static class FooState {
     public String message;
     public boolean momoCalled;
@@ -43,13 +41,8 @@ public class GmContextSpec {
 
   public static class ViewFoo extends StackPane {
     public ViewFoo() {
-
-      on(FooAction.class, act -> {
-        log.info("External Foo listener: [{}]", act.payload);
-      });
-
+      on(FooAction.class, act -> log.info("External Foo listener: [{}]", act.payload));
       Node root = root(r$ -> r$.borderPane((bp, bp$) -> {
-
         bp$.top(t$ -> t$.menuBar(mb$ -> {
           mb$.menu((m, m$) -> {
             m.setText("Menu 0");
@@ -70,17 +63,14 @@ public class GmContextSpec {
               vb$.onMount(sc -> log.info("Tab 0 vbox mounted: " + sc));
               vb$.onUnmount(() -> log.info("Tab 0 vbox unmounted."));
               vb$.textField(tf -> {
-                tf.setUserData((Consumer<FooAction>) fa -> tf.setText(fa.payload));
-                on(FooAction.class, (Consumer<FooAction>) tf.getUserData());
                 tf.setText("text field content");
+                tf.setUserData(on(FooAction.class, fa -> tf.setText(fa.payload)));
               });
               vb$.button(bt -> {
                 bt.setText("Submit");
                 bt.setOnAction(e -> {
                   dispatch(new FooAction().withPayload("MamaMax is watching you..."));
-                  inState(FooState.class, fst -> {
-                    log.warn("State load inside ui... [{}]", ShArgument.kv("state", fst));
-                  });
+                  inState(FooState.class, fst -> log.warn("State load inside ui... [{}]", ShArgument.kv("state", fst)));
                 });
               });
               vb$.menuButton((mb, mb$) -> {
@@ -141,9 +131,7 @@ public class GmContextSpec {
         }));
       }));
 
-      on(MomoAction.class, act -> {
-        log.info("External Momo listener: [{}]", act.payload);
-      });
+      on(MomoAction.class, act -> log.info("External Momo listener: [{}]", act.payload));
 
       getChildren().add(root);
 
@@ -158,17 +146,9 @@ public class GmContextSpec {
                 return fst;
               })
               .apply(act)
-          /*
-          GmSelector.combineSelectors(
-              new GmSelector<>(
-                  Function.identity(),
-                                        ^----- MATCHER ABOVE,
-                  (fst0, fst1) -> fst1
-              )
-          )
-          */
-          ,
-          new FooState()
+          // ^----- MATCHER ABOVE
+          // GmSelector.combineSelectors(new GmSelector<>(Function.identity(), , (fst0, fst1) -> fst1))
+          , new FooState()
       ));
     }
   }
