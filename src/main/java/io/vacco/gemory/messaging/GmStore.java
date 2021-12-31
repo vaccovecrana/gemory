@@ -1,17 +1,14 @@
 package io.vacco.gemory.messaging;
 
 import org.slf4j.*;
-
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.*;
 
 public class GmStore {
 
   private static final Logger log = LoggerFactory.getLogger(GmStore.class);
-
   // Action types to consumers of actions.
   private static final Map<Class<?>, List<WeakReference<Consumer<GmAction<?>>>>> actIdx = new ConcurrentHashMap<>();
   // State types to state processors.
@@ -45,6 +42,15 @@ public class GmStore {
     prcIdx.put(p.getState().getClass(), p);
   }
 
+  private static void eval(GmAction<?> act, WeakReference<Consumer<GmAction<?>>> cRef) {
+    Consumer<GmAction<?>> c = cRef.get();
+    if (c != null) {
+      c.accept(act);
+    } else if (log.isDebugEnabled()) {
+      log.debug("Reference [{}] for action [{}] has been invalidated.", cRef, act.getClass().getSimpleName());
+    }
+  }
+
   public static void dispatch(GmAction<?> act) {
     try {
       for (GmProcessor<?> p : prcIdx.values()) {
@@ -52,13 +58,14 @@ public class GmStore {
       }
       List<WeakReference<Consumer<GmAction<?>>>> cl = actIdx.get(act.getClass());
       if (cl != null && !cl.isEmpty()) {
-        for (WeakReference<Consumer<GmAction<?>>> cRef : cl) {
-          Consumer<GmAction<?>> c = cRef.get();
-          if (c != null) {
-            c.accept(act);
-          } else if (log.isDebugEnabled()) {
-            log.debug("Reference [{}] for action [{}] has been invalidated.", cRef, act.getClass().getSimpleName());
-          }
+        List<WeakReference<Consumer<GmAction<?>>>> cycleRefs = new ArrayList<>(cl);
+        cycleRefs.forEach(cRef -> eval(act, cRef));
+        if (cycleRefs.size() != cl.size()) {
+          cl.forEach(cRef -> {
+            if (!cycleRefs.contains(cRef)) {
+              eval(act, cRef);
+            }
+          });
         }
       } else if (log.isDebugEnabled()) {
         log.debug("No listeners found for action [{}]", act.getClass().getSimpleName());
