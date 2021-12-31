@@ -6,6 +6,7 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class GmStore {
 
@@ -32,6 +33,12 @@ public class GmStore {
     if (p != null) {
       c.accept((S) p.getState());
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <S, O> O mapState(Class<S> stc, Function<S, O> oFn) {
+    GmProcessor<?> p = prcIdx.get(stc);
+    return oFn.apply((S) p.getState());
   }
 
   public static void useProcessor(GmProcessor<?> p) {
