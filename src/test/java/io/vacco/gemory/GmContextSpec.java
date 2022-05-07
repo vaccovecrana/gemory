@@ -19,6 +19,7 @@ import java.util.*;
 
 import static io.vacco.shax.logging.ShOption.*;
 import static io.vacco.gemory.messaging.GmStore.*;
+import static io.vacco.gemory.util.GmCss.*;
 import static io.vacco.gemory.core.GmContext.root;
 import static j8spec.J8Spec.*;
 
@@ -66,6 +67,7 @@ public class GmContextSpec {
                 tf.setText("text field content");
                 tf.setUserData(on(FooAction.class, fa -> tf.setText(fa.payload)));
               });
+              vb$.node(empty(4, 4, 4, 4));
               vb$.button(bt -> {
                 bt.setText("Submit");
                 bt.setOnAction(e -> {
@@ -73,15 +75,21 @@ public class GmContextSpec {
                   inState(FooState.class, fst -> log.warn("State load inside ui... [{}]", ShArgument.kv("state", fst)));
                 });
               });
+              vb$.node(empty(4, 4, 4, 4));
               vb$.menuButton((mb, mb$) -> {
                 mb.setText("Menu button");
                 mb$.item(mi -> mi.setText("Menu button item"));
               });
+              vb$.node(empty(4, 4, 4, 4));
               vb$.splitMenuButton(mb -> {
                 mb.menuButton.setText("Split Menu button");
                 mb.item(mi -> mi.setText("Split menu item"));
               });
-              vb$.label(lb -> lb.setText("A label"));
+              vb$.label(lb -> {
+                lb.setText("A label");
+                pad(lb, 8, 8);
+              });
+              pad(vb, 8);
             });
           });
 
@@ -134,6 +142,7 @@ public class GmContextSpec {
       on(MomoAction.class, act -> log.info("External Momo listener: [{}]", act.payload));
 
       getChildren().add(root);
+      applyNord(root.getParent());
 
       useProcessor(GmProcessor.of(
           (act, fst) -> new GmMatch<FooState>()
