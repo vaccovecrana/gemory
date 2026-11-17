@@ -1,5 +1,6 @@
 package io.vacco.gemory;
 
+import io.vacco.gemory.core.GmLog;
 import io.vacco.gemory.messaging.*;
 import io.vacco.gemory.util.GmStyleEditor;
 import io.vacco.shax.logging.ShArgument;
@@ -33,6 +34,12 @@ public class GmContextSpec {
 
   private static final Logger log = LoggerFactory.getLogger(GmContextSpec.class);
 
+  static {
+    GmLog.setInfoLogger(log::info);
+    GmLog.setDebugLogger(log::debug);
+    GmLog.setErrorLogger(log::error);
+  }
+
   public static class FooAction extends GmAction<String> {}
   public static class MomoAction extends GmAction<Boolean> {}
   public static class FooState {
@@ -41,6 +48,7 @@ public class GmContextSpec {
   }
 
   public static class ViewFoo extends StackPane {
+    @SuppressWarnings("this-escape")
     public ViewFoo() {
       on(FooAction.class, act -> log.info("External Foo listener: [{}]", act.payload));
       Node root = root(r$ -> r$.borderPane((bp, bp$) -> {

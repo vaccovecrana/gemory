@@ -8,8 +8,8 @@ import static io.vacco.gemory.core.GmContext.*;
 
 public class GmStyleEditor extends StackPane {
 
+  @SuppressWarnings("this-escape")
   public GmStyleEditor(Pane pane) {
-
     pane.getStyleClass().add("root");
 
     getChildren().add(root($ -> $.borderPane((bp, bp$) -> {

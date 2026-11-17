@@ -1,24 +1,24 @@
 package io.vacco.gemory.messaging;
 
-import org.slf4j.*;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.*;
 
+import static io.vacco.gemory.core.GmLog.*;
+
 public class GmStore {
 
-  private static final Logger log = LoggerFactory.getLogger(GmStore.class);
   // Action types to consumers of actions.
   private static final Map<Class<?>, List<WeakReference<Consumer<GmAction<?>>>>> actIdx = new ConcurrentHashMap<>();
   // State types to state processors.
   private static final Map<Class<?>, GmProcessor<?>> prcIdx = new ConcurrentHashMap<>();
 
-  private static Consumer<Throwable> exceptionHandler = e -> log.error("Action processing cycle error.", e);
+  private static Consumer<Throwable> exceptionHandler = e -> error("Action processing cycle error.", e);
 
   @SuppressWarnings("unchecked")
   public static <A extends GmAction<?>> Consumer<A> on(Class<A> pattern, Consumer<A> c) {
-    log.info("Adding action listener: [{}] -> [{}]", pattern.getSimpleName(), c);
+    info("Adding action listener: [{}] -> [{}]", pattern.getSimpleName(), c);
     WeakReference<Consumer<GmAction<?>>> wc = new WeakReference<>((Consumer<GmAction<?>>) c);
     actIdx.computeIfAbsent(pattern, p -> new ArrayList<>()).add(wc);
     return c;
@@ -46,8 +46,8 @@ public class GmStore {
     Consumer<GmAction<?>> c = cRef.get();
     if (c != null) {
       c.accept(act);
-    } else if (log.isDebugEnabled()) {
-      log.debug("Reference [{}] for action [{}] has been invalidated.", cRef, act.getClass().getSimpleName());
+    } else if (isDebugEnabled()) {
+      debug("Reference [{}] for action [{}] has been invalidated.", cRef, act.getClass().getSimpleName());
     }
   }
 
@@ -67,8 +67,8 @@ public class GmStore {
             }
           });
         }
-      } else if (log.isDebugEnabled()) {
-        log.debug("No listeners found for action [{}]", act.getClass().getSimpleName());
+      } else if (isDebugEnabled()) {
+        debug("No listeners found for action [{}]", act.getClass().getSimpleName());
       }
     } catch (Exception e) {
       exceptionHandler.accept(e);
