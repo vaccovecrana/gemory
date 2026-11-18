@@ -1,14 +1,29 @@
 package io.vacco.gemory.core;
 
+import javafx.scene.Node;
 import javafx.scene.layout.BorderPane;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class GmBorderPaneContext {
 
   public BorderPane borderPane = new BorderPane();
 
+  private final Map<String, Node> ids;
+
+  /**
+   * Creates a border-pane context with a fresh id registry.
+   */
+  public GmBorderPaneContext() {
+    this(new LinkedHashMap<>());
+  }
+
+  GmBorderPaneContext(Map<String, Node> ids) {
+    this.ids = Objects.requireNonNull(ids, "ids");
+  }
+
   private void build(Consumer<GmContext> init, Consumer<GmContext> setPosition) {
-    GmContext c = new GmContext();
+    GmContext c = new GmContext(ids);
     init.accept(c);
     setPosition.accept(c);
   }
