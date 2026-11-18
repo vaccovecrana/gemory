@@ -29,3 +29,19 @@ javafx {
 tasks.test {
   systemProperty("gemory.test.desktop", System.getProperty("gemory.test.desktop", "true"))
 }
+
+tasks.register<JavaExec>("runDemo") {
+  group = "application"
+  description = "Runs the manual Gemory demo"
+  dependsOn(tasks.testClasses)
+
+  val testRuntime = sourceSets["test"].runtimeClasspath
+  val javaFxJars = testRuntime.filter { it.name.startsWith("javafx-") && it.name.endsWith(".jar") }
+  classpath = testRuntime.filter { !(it.name.startsWith("javafx-") && it.name.endsWith(".jar")) }
+  mainClass.set("io.vacco.gemory.GmSpecShell")
+  jvmArgs(
+      "--enable-native-access=javafx.graphics",
+      "--module-path", javaFxJars.asPath,
+      "--add-modules", "javafx.controls"
+  )
+}

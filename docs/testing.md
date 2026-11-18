@@ -168,11 +168,22 @@ Xvfb is the more portable option.
 
 ## Manual demo
 
-The old windowed demo is still available, but it is no longer a JUnit test:
+The old windowed demo is still available, but it is no longer a JUnit test.
+
+Run it from the IDE:
 
 ```
 Run io.vacco.gemory.GmSpecShell.main from your IDE.
 ```
+
+Or from the command line on a desktop machine:
+
+```bash
+./gradlew runDemo
+```
+
+The `runDemo` task uses the test classpath and moves the JavaFX jars onto the
+module path. It is desktop-only and is not part of `./gradlew test`.
 
 It opens the sample view with the Nord theme and the original controls. The
 automated button-click tests use the same `ViewFoo` and stable ids
