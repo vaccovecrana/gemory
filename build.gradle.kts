@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "io.vacco.gemory"
-version = "0.6.0"
+version = "0.7.0"
 
 configure<io.vacco.oss.gitflow.GsPluginProfileExtension> {
   orgConfigUrl("https://raw.githubusercontent.com/vaccovecrana/org-config/refs/heads/main/vacco-oss-java-25.json")
@@ -24,4 +24,25 @@ configure<io.vacco.cphell.ChPluginExtension> {
 javafx {
   version = "27"
   modules("javafx.controls")
+}
+
+tasks.test {
+  systemProperty("gemory.test.desktop", System.getProperty("gemory.test.desktop", "true"))
+}
+
+tasks.register<JavaExec>("runDemo") {
+  group = "application"
+  description = "Runs the manual Gemory demo"
+  dependsOn(tasks.testClasses)
+
+  val testRuntime = sourceSets["test"].runtimeClasspath
+  // JavaFX must be on --module-path for Application.launch; keep it off the classpath.
+  val javaFxJars = testRuntime.filter { it.name.startsWith("javafx-") && it.name.endsWith(".jar") }
+  classpath = testRuntime.filter { !(it.name.startsWith("javafx-") && it.name.endsWith(".jar")) }
+  mainClass.set("io.vacco.gemory.GmSpecShell")
+  jvmArgs(
+      "--enable-native-access=javafx.graphics",
+      "--module-path", javaFxJars.asPath,
+      "--add-modules", "javafx.controls"
+  )
 }
