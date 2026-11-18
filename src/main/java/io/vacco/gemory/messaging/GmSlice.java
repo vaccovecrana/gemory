@@ -1,14 +1,14 @@
 package io.vacco.gemory.messaging;
 
 /**
- * Reducer-owned version counter for one registered state type.
+ * State slice container for one registered state type.
  *
  * <p>
- *   The processor keeps two counters: the version at the start of the current (or last)
- *   pass, and the current version. A reducer marks a change through
- *   {@code GmStore.currentSlice().markChanged()}; the first mark in a pass increments the
- *   current version. If the reducer marks nothing, or the pass fails, both counters stay
- *   equal.
+ *   A slice holds the current state object plus two version counters: the version at the
+ *   start of the current (or last) pass, and the current version. A reducer marks a change
+ *   through {@code GmStore.currentSlice().markChanged()}; the first mark in a pass
+ *   increments the current version. If the reducer marks nothing, or the pass fails, both
+ *   counters stay equal.
  * </p>
  *
  * <p>
@@ -18,19 +18,42 @@ package io.vacco.gemory.messaging;
  * </p>
  *
  * <p>
- *   <b>Reducer-only:</b> {@link #markChanged()} is valid only on the slice returned by
- *   {@link GmStore#currentSlice()} while a reducer is applying. Clients only read
- *   {@link #changed()}, {@link #version()} and {@link #changedSince(long)}.
+ *   The store creates one slice per processor. Clients obtain the live slice with
+ *   {@link GmStore#slice(Class)} and read {@link #state()}, {@link #changed()},
+ *   {@link #version()} or {@link #changedSince(long)}. Reducers mark changes through
+ *   {@code GmStore.currentSlice().markChanged()}.
  * </p>
  *
+ * <p>
+ *   <b>Reducer-only:</b> {@link #markChanged()} is valid only on the slice returned by
+ *   {@link GmStore#currentSlice()} while a reducer is applying. {@link #state(Object)} is
+ *   used by the owning processor.
+ * </p>
+ *
+ * @param <S> state type
  * @since 0.7.0
  */
-public final class GmSlice {
+public final class GmSlice<S> {
 
+  private S state;
   private long v0;
   private long v1;
 
-  GmSlice() { }
+  /**
+   * Sets the state reference. Used by the owning processor.
+   *
+   * @param st0 next state reference
+   */
+  public void state(S st0) {
+    this.state = st0;
+  }
+
+  /**
+   * @return current state reference
+   */
+  public S state() {
+    return this.state;
+  }
 
   /**
    * @return cumulative number of changed passes
@@ -82,4 +105,5 @@ public final class GmSlice {
   void rollback() {
     v1 = v0;
   }
+
 }

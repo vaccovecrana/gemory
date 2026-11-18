@@ -22,12 +22,14 @@ import static io.vacco.gemory.core.GmLog.*;
  * </p>
  *
  * <p>
- *   <b>Slices:</b> each processor owns a {@link GmSlice}. Reducers declare changes by
- *   calling {@code GmStore.currentSlice().markChanged()}. Clients read
+ *   <b>Slices:</b> each registered state type has a {@link GmSlice} that holds the current
+ *   state object and two version counters. Reducers declare changes by calling
+ *   {@code GmStore.currentSlice().markChanged()}. Clients read
+ *   {@link GmStore#state(Class)} or {@link GmSlice#state()}, and poll
  *   {@link GmSlice#changed()}, {@link GmSlice#version()} or
- *   {@link GmSlice#changedSince(long)} and poll on the dispatch thread. There are no
- *   automatic pass counters, state-change listeners or action history: the reducer is the
- *   authority on whether its state changed.
+ *   {@link GmSlice#changedSince(long)} on the dispatch thread. There are no automatic pass
+ *   counters, state-change listeners or action history: the reducer is the authority on
+ *   whether its state changed.
  * </p>
  *
  * <p>
@@ -57,7 +59,7 @@ public class GmStore {
 
   private static final Consumer<Throwable> defaultExceptionHandler = e -> error("Action processing cycle error.", e);
   private static Consumer<Throwable> exceptionHandler = defaultExceptionHandler;
-  private static GmSlice activeSlice;
+  private static GmSlice<?> activeSlice;
 
   /**
    * Creates a store instance. All store state is static; this constructor exists for source
@@ -87,7 +89,7 @@ public class GmStore {
   }
 
   /**
-   * Reads the current state for a registered processor type.
+   * Reads the current state from the registered processor’s slice.
    *
    * @param stc state type
    * @param c   consumer of the current state
@@ -99,7 +101,7 @@ public class GmStore {
     Objects.requireNonNull(c, "consumer");
     GmProcessor<?> p = prcIdx.get(stc);
     if (p != null) {
-      c.accept((S) p.getState());
+      c.accept((S) p.slice().state());
     }
   }
 
@@ -130,8 +132,8 @@ public class GmStore {
    */
   public static void useProcessor(GmProcessor<?> p) {
     Objects.requireNonNull(p, "processor");
-    Objects.requireNonNull(p.getState(), "processor initial state");
-    prcIdx.put(p.getState().getClass(), p);
+    Objects.requireNonNull(p.slice().state(), "processor initial state");
+    prcIdx.put(p.slice().state().getClass(), p);
   }
 
   /**
@@ -146,7 +148,7 @@ public class GmStore {
   }
 
   /**
-   * Returns an immutable copy of the currently registered state references.
+   * Returns an immutable copy of the state references held by the registered slices.
    *
    * <p>
    *   The map is copied, but the state objects are not. Reducers may mutate state in place,
@@ -157,12 +159,12 @@ public class GmStore {
    */
   public static Map<Class<?>, Object> snapshot() {
     Map<Class<?>, Object> states = new LinkedHashMap<>();
-    prcIdx.forEach((type, processor) -> states.put(type, processor.getState()));
+    prcIdx.forEach((type, processor) -> states.put(type, processor.slice().state()));
     return Collections.unmodifiableMap(states);
   }
 
   /**
-   * Returns the current state for an exact registered type.
+   * Returns the state held by the slice for an exact registered type.
    *
    * @param type state type
    * @param <S>  state type
@@ -175,29 +177,33 @@ public class GmStore {
     if (p == null) {
       throw new IllegalArgumentException("No processor registered for state type " + type.getName());
     }
-    return type.cast(p.getState());
+    return type.cast(p.slice().state());
   }
 
   /**
-   * Returns the reducer-owned version counter for an exact registered state type.
+   * Returns the live slice (state plus version counters) for an exact registered state type.
    *
    * <p>
    *   The returned handle is live for the lifetime of the processor. Re-fetch it after
    *   {@link #reset()}, {@link #removeProcessor(Class)} or processor replacement. Reducers
-   *   mark changes through {@link #currentSlice()}; clients only read the slice.
+   *   mark changes through {@link #currentSlice()}; clients read {@link GmSlice#state()},
+   *   {@link GmSlice#changed()}, {@link GmSlice#version()} and
+   *   {@link GmSlice#changedSince(long)}.
    * </p>
    *
    * @param type state type
-   * @return slice version handle
+   * @param <S>  state type
+   * @return slice containing the state and version counters
    * @throws IllegalArgumentException if no processor is registered for {@code type}
    */
-  public static GmSlice slice(Class<?> type) {
+  @SuppressWarnings("unchecked")
+  public static <S> GmSlice<S> slice(Class<S> type) {
     Objects.requireNonNull(type, "state type");
     GmProcessor<?> p = prcIdx.get(type);
     if (p == null) {
       throw new IllegalArgumentException("No processor registered for state type " + type.getName());
     }
-    return p.getSlice();
+    return (GmSlice<S>) p.slice();
   }
 
   /**
@@ -212,8 +218,8 @@ public class GmStore {
    * @return active reducer slice
    * @throws IllegalStateException if no reducer is currently applying an action
    */
-  public static GmSlice currentSlice() {
-    GmSlice current = activeSlice;
+  public static GmSlice<?> currentSlice() {
+    GmSlice<?> current = activeSlice;
     if (current == null) {
       throw new IllegalStateException("currentSlice() is only valid inside a reducer");
     }
@@ -266,10 +272,10 @@ public class GmStore {
    */
   public static void dispatch(GmAction<?> act) {
     Objects.requireNonNull(act, "action");
-    GmSlice previous = activeSlice;
+    GmSlice<?> previous = activeSlice;
     try {
       for (GmProcessor<?> p : prcIdx.values()) {
-        activeSlice = p.getSlice();
+        activeSlice = p.slice();
         try {
           p.apply(act);
         } catch (Exception e) {

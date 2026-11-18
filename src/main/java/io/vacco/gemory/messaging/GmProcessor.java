@@ -3,7 +3,12 @@ package io.vacco.gemory.messaging;
 import java.util.Objects;
 
 /**
- * Applies actions to a single state object and owns its {@link GmSlice} version counter.
+ * Applies actions to the state held by a {@link GmSlice}.
+ *
+ * <p>
+ *   The slice owns both the current state object and the version counters. Create processors
+ *   with {@link #of(GmReducer, Object)}.
+ * </p>
  *
  * <p>
  *   Reducers may mutate state in place. A reducer marks a change by calling
@@ -12,9 +17,9 @@ import java.util.Objects;
  * </p>
  *
  * <p>
- *   The slice is rolled back if the reducer throws, so a failed pass does not advance the
- *   version. The state object may still have been partially mutated, because Gemory does
- *   not copy or restore state.
+ *   The slice version is rolled back if the reducer throws, so a failed pass does not
+ *   advance the version. The state object may still have been partially mutated, because
+ *   Gemory does not copy or restore state.
  * </p>
  *
  * @param <S> state type
@@ -22,24 +27,23 @@ import java.util.Objects;
  */
 public class GmProcessor<S> {
 
-  private S state;
   private GmReducer<S> reducer;
-  private final GmSlice slice = new GmSlice();
-
-  /**
-   * Creates an empty processor. Prefer {@link #of(GmReducer, Object)}.
-   */
-  public GmProcessor() { }
+  private final GmSlice<S> slice = new GmSlice<>();
 
   /**
    * Applies an action and commits or rolls back the slice change for this pass.
+   *
+   * <p>
+   *   The reducer receives the slice’s current state; the returned state is stored back in
+   *   the slice.
+   * </p>
    *
    * @param act action to apply
    */
   public void apply(GmAction<?> act) {
     slice.begin();
     try {
-      this.state = reducer.reduce(act, state);
+      this.slice.state(reducer.reduce(act, slice.state()));
     } catch (RuntimeException | Error e) {
       slice.rollback();
       throw e;
@@ -47,7 +51,7 @@ public class GmProcessor<S> {
   }
 
   /**
-   * Creates a processor.
+   * Creates a processor whose slice holds {@code init}.
    *
    * @param r    reducer
    * @param init initial state
@@ -57,14 +61,12 @@ public class GmProcessor<S> {
   public static <T> GmProcessor<T> of(GmReducer<T> r, T init) {
     GmProcessor<T> p = new GmProcessor<>();
     p.reducer = Objects.requireNonNull(r, "reducer");
-    p.state = Objects.requireNonNull(init, "initial state");
+    p.slice.state(Objects.requireNonNull(init, "initial state"));
     return p;
   }
 
-  /**
-   * @return current state reference
-   */
-  public S getState() { return state; }
+  GmSlice<S> slice() {
+    return slice;
+  }
 
-  GmSlice getSlice() { return slice; }
 }

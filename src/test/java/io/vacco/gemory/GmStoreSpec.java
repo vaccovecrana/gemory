@@ -155,7 +155,7 @@ public class GmStoreSpec {
     });
 
     it("exposes the active slice inside a reducer", () -> {
-      var seen = new AtomicReference<GmSlice>();
+      var seen = new AtomicReference<GmSlice<?>>();
       var p = GmProcessor.of((act, state) -> {
         seen.set(GmStore.currentSlice());
         GmStore.currentSlice().markChanged();
@@ -193,14 +193,14 @@ public class GmStoreSpec {
       dispatch(new NoOp());
 
       assertEquals(1, errors.size());
-      assertTrue(errors.get(0) instanceof IllegalStateException);
+      assertTrue(errors.getFirst() instanceof IllegalStateException);
       assertEquals(0, slice(CounterState.class).version());
       assertEquals(0, slice(OtherState.class).version());
     });
 
     it("restores the active slice after a nested dispatch", () -> {
       var nested = new AtomicBoolean();
-      var seen = new AtomicReference<GmSlice>();
+      var seen = new AtomicReference<GmSlice<?>>();
       var p = GmProcessor.of((act, state) -> {
         if (act instanceof Inc && nested.compareAndSet(false, true)) {
           GmStore.dispatch(new NoOp());
