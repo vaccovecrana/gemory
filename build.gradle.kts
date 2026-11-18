@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "io.vacco.gemory"
-version = "0.8.0"
+version = "0.7.0"
 
 configure<io.vacco.oss.gitflow.GsPluginProfileExtension> {
   orgConfigUrl("https://raw.githubusercontent.com/vaccovecrana/org-config/refs/heads/main/vacco-oss-java-25.json")
