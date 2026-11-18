@@ -90,8 +90,9 @@ public class GmContext {
       throw new IllegalArgumentException("Node id must not be null or blank");
     }
     Objects.requireNonNull(n, "node");
+    register(id, n);
     n.setId(id);
-    node(n);
+    nodes.add(n);
     return n;
   }
 

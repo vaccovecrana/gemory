@@ -65,6 +65,19 @@ public class GmContextIdsSpec {
       }));
     });
 
+    it("leaves a node id unchanged when explicit registration fails", () -> {
+      var first = new Pane();
+      var second = new Pane();
+      second.setId("original");
+      var context = new GmContext();
+      context.node("dup", first);
+
+      assertThrows(IllegalArgumentException.class, () -> context.node("dup", second));
+
+      assertEquals("original", second.getId());
+      assertFalse(context.nodes.contains(second));
+    });
+
     it("allows the same node to be registered twice", () -> {
       var pane = new Pane();
       var root = rootWithIds(c -> {
