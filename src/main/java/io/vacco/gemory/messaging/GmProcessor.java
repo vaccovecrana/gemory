@@ -7,9 +7,8 @@ import java.util.Objects;
  *
  * <p>
  *   Reducers may mutate state in place. A reducer marks a change by calling
- *   {@link GmSlice#markChanged()} through {@code GmStore.slice(StateType.class)}. The slice
- *   version advances only when a reducer marks a change; the processor does not count
- *   passes.
+ *   {@code GmStore.currentSlice().markChanged()}. The slice version advances only when a
+ *   reducer marks a change; the processor does not count passes.
  * </p>
  *
  * <p>

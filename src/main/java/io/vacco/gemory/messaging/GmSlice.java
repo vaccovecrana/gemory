@@ -6,8 +6,9 @@ package io.vacco.gemory.messaging;
  * <p>
  *   The processor keeps two counters: the version at the start of the current (or last)
  *   pass, and the current version. A reducer marks a change through
- *   {@link #markChanged()}; the first mark in a pass increments the current version. If the
- *   reducer marks nothing, or the pass fails, both counters stay equal.
+ *   {@code GmStore.currentSlice().markChanged()}; the first mark in a pass increments the
+ *   current version. If the reducer marks nothing, or the pass fails, both counters stay
+ *   equal.
  * </p>
  *
  * <p>
@@ -17,9 +18,9 @@ package io.vacco.gemory.messaging;
  * </p>
  *
  * <p>
- *   <b>Reducer-only:</b> {@link #markChanged()} is valid only while a processor is applying
- *   an action. Clients only read {@link #changed()}, {@link #version()} and
- *   {@link #changedSince(long)}.
+ *   <b>Reducer-only:</b> {@link #markChanged()} is valid only on the slice returned by
+ *   {@link GmStore#currentSlice()} while a reducer is applying. Clients only read
+ *   {@link #changed()}, {@link #version()} and {@link #changedSince(long)}.
  * </p>
  *
  * @since 0.7.0
@@ -60,11 +61,14 @@ public final class GmSlice {
    *   Calling this more than once in the same pass still counts as one changed pass.
    * </p>
    *
-   * @throws IllegalStateException if called outside a reducer application
+   * @throws IllegalStateException if called outside a reducer application, or on a slice
+   *                               other than the active reducer slice
    */
   public void markChanged() {
-    if (!GmStore.isDispatching()) {
-      throw new IllegalStateException("markChanged() is only valid inside a reducer");
+    if (GmStore.currentSlice() != this) {
+      throw new IllegalStateException(
+          "markChanged() must be called on GmStore.currentSlice() from the active reducer"
+      );
     }
     if (v1 == v0) {
       v1++;

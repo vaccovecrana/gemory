@@ -151,12 +151,12 @@ public class GmContextSpec {
           (act, fst) -> new GmMatch<FooState>()
               .on(FooAction.class, fa -> {
                 fst.message = fa.payload;
-                GmStore.slice(FooState.class).markChanged();
+                GmStore.currentSlice().markChanged();
                 return fst;
               })
               .on(MomoAction.class, ma -> {
                 fst.momoCalled = ma.payload;
-                GmStore.slice(FooState.class).markChanged();
+                GmStore.currentSlice().markChanged();
                 return fst;
               })
               .apply(act)

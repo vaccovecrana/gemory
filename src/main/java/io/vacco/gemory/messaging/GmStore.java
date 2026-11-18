@@ -2,7 +2,6 @@ package io.vacco.gemory.messaging;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.*;
 
 import static io.vacco.gemory.core.GmLog.*;
@@ -24,7 +23,7 @@ import static io.vacco.gemory.core.GmLog.*;
  *
  * <p>
  *   <b>Slices:</b> each processor owns a {@link GmSlice}. Reducers declare changes by
- *   calling {@code GmStore.slice(StateType.class).markChanged()}. Clients read
+ *   calling {@code GmStore.currentSlice().markChanged()}. Clients read
  *   {@link GmSlice#changed()}, {@link GmSlice#version()} or
  *   {@link GmSlice#changedSince(long)} and poll on the dispatch thread. There are no
  *   automatic pass counters, state-change listeners or action history: the reducer is the
@@ -39,6 +38,11 @@ import static io.vacco.gemory.core.GmLog.*;
  * </p>
  *
  * <p>
+ *   Processors and action listeners are kept in registration order, so dispatch and
+ *   {@link #snapshot()} order are deterministic for a single-threaded store.
+ * </p>
+ *
+ * <p>
  *   <b>Subscriptions:</b> {@link #on(Class, Consumer)} keeps weak references and is the
  *   existing action-listener API. Hold the returned consumer for as long as the listener is
  *   needed. {@link #reset()} clears the listener index.
@@ -47,13 +51,13 @@ import static io.vacco.gemory.core.GmLog.*;
 public class GmStore {
 
   // Action types to consumers of actions. Weak references: existing behavior.
-  private static final Map<Class<?>, List<WeakReference<Consumer<GmAction<?>>>>> actIdx = new ConcurrentHashMap<>();
-  // State types to state processors.
-  private static final Map<Class<?>, GmProcessor<?>> prcIdx = new ConcurrentHashMap<>();
+  private static final Map<Class<?>, List<WeakReference<Consumer<GmAction<?>>>>> actIdx = new LinkedHashMap<>();
+  // State types to state processors, in registration order.
+  private static final Map<Class<?>, GmProcessor<?>> prcIdx = new LinkedHashMap<>();
 
   private static final Consumer<Throwable> defaultExceptionHandler = e -> error("Action processing cycle error.", e);
   private static Consumer<Throwable> exceptionHandler = defaultExceptionHandler;
-  private static boolean dispatching;
+  private static GmSlice activeSlice;
 
   /**
    * Creates a store instance. All store state is static; this constructor exists for source
@@ -179,8 +183,8 @@ public class GmStore {
    *
    * <p>
    *   The returned handle is live for the lifetime of the processor. Re-fetch it after
-   *   {@link #reset()}, {@link #removeProcessor(Class)} or processor replacement. The
-   *   reducer calls {@link GmSlice#markChanged()}; clients only read the slice.
+   *   {@link #reset()}, {@link #removeProcessor(Class)} or processor replacement. Reducers
+   *   mark changes through {@link #currentSlice()}; clients only read the slice.
    * </p>
    *
    * @param type state type
@@ -194,6 +198,26 @@ public class GmStore {
       throw new IllegalArgumentException("No processor registered for state type " + type.getName());
     }
     return p.getSlice();
+  }
+
+  /**
+   * Returns the slice of the processor currently applying an action.
+   *
+   * <p>
+   *   Reducers call {@code GmStore.currentSlice().markChanged()}. Clients use
+   *   {@link #slice(Class)} to read a slice. This method throws outside reducer
+   *   application.
+   * </p>
+   *
+   * @return active reducer slice
+   * @throws IllegalStateException if no reducer is currently applying an action
+   */
+  public static GmSlice currentSlice() {
+    GmSlice current = activeSlice;
+    if (current == null) {
+      throw new IllegalStateException("currentSlice() is only valid inside a reducer");
+    }
+    return current;
   }
 
   /**
@@ -226,31 +250,37 @@ public class GmStore {
    *
    * <p>
    *   Reducers update slice versions explicitly with
-   *   {@code GmStore.slice(StateType.class).markChanged()}. A reducer that throws rolls its
+   *   {@code GmStore.currentSlice().markChanged()}. A reducer that throws rolls its
    *   slice version back, but any in-place state mutation it performed before throwing is
    *   not restored.
    * </p>
    *
    * <p>
    *   Dispatching from an action listener is allowed and produces nested processing.
-   *   Dispatching from a processor is not supported.
+   *   Dispatching from a processor is not supported; the active slice is saved and restored
+   *   around each processor so an accidental nested dispatch cannot leave the outer pass
+   *   without one.
    * </p>
    *
    * @param act action to dispatch
    */
   public static void dispatch(GmAction<?> act) {
     Objects.requireNonNull(act, "action");
-    dispatching = true;
+    GmSlice previous = activeSlice;
     try {
       for (GmProcessor<?> p : prcIdx.values()) {
+        activeSlice = p.getSlice();
         try {
           p.apply(act);
         } catch (Exception e) {
+          activeSlice = previous;
           report(e);
+        } finally {
+          activeSlice = previous;
         }
       }
     } finally {
-      dispatching = false;
+      activeSlice = previous;
     }
     notifyTypedActions(act);
   }
@@ -262,10 +292,6 @@ public class GmStore {
    */
   public static void setExceptionHandler(Consumer<Throwable> eh) {
     exceptionHandler = Objects.requireNonNull(eh, "exception handler");
-  }
-
-  static boolean isDispatching() {
-    return dispatching;
   }
 
   private static void report(Throwable t) {

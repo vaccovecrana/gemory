@@ -5,7 +5,7 @@ import j8spec.junit.J8SpecRunner;
 import org.junit.runner.RunWith;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.*;
 
 import static io.vacco.gemory.messaging.GmStore.*;
 import static j8spec.J8Spec.*;
@@ -39,7 +39,7 @@ public class GmStoreSpec {
     return GmProcessor.of((act, state) -> {
       if (act instanceof Inc) {
         state.value++;
-        GmStore.slice(CounterState.class).markChanged();
+        GmStore.currentSlice().markChanged();
       }
       return state;
     }, new CounterState());
@@ -49,8 +49,8 @@ public class GmStoreSpec {
     return GmProcessor.of((act, state) -> {
       if (act instanceof Inc) {
         state.value++;
-        GmStore.slice(CounterState.class).markChanged();
-        GmStore.slice(CounterState.class).markChanged();
+        GmStore.currentSlice().markChanged();
+        GmStore.currentSlice().markChanged();
       }
       return state;
     }, new CounterState());
@@ -60,7 +60,7 @@ public class GmStoreSpec {
     return GmProcessor.of((act, state) -> {
       if (act instanceof Inc) {
         state.value++;
-        GmStore.slice(CounterState.class).markChanged();
+        GmStore.currentSlice().markChanged();
         throw new IllegalStateException("boom");
       }
       return state;
@@ -71,7 +71,7 @@ public class GmStoreSpec {
     return GmProcessor.of((act, state) -> {
       if (act instanceof OtherAction) {
         state.value++;
-        GmStore.slice(OtherState.class).markChanged();
+        GmStore.currentSlice().markChanged();
       }
       return state;
     }, new OtherState());
@@ -154,9 +154,78 @@ public class GmStoreSpec {
       assertFalse(slice.changed());
     });
 
+    it("exposes the active slice inside a reducer", () -> {
+      var seen = new AtomicReference<GmSlice>();
+      var p = GmProcessor.of((act, state) -> {
+        seen.set(GmStore.currentSlice());
+        GmStore.currentSlice().markChanged();
+        return state;
+      }, new CounterState());
+      useProcessor(p);
+      var slice = slice(CounterState.class);
+
+      dispatch(new NoOp());
+
+      assertSame(slice, seen.get());
+      assertTrue(slice.changed());
+      assertEquals(1, slice.version());
+    });
+
+    it("rejects currentSlice() outside a reducer", () -> {
+      assertThrows(IllegalStateException.class, GmStore::currentSlice);
+    });
+
     it("rejects markChanged() outside a reducer", () -> {
       useProcessor(counter());
       assertThrows(IllegalStateException.class, () -> slice(CounterState.class).markChanged());
+    });
+
+    it("rejects marking another processor's slice", () -> {
+      var errors = new ArrayList<Throwable>();
+      setExceptionHandler(errors::add);
+      var bad = GmProcessor.of((act, state) -> {
+        GmStore.slice(OtherState.class).markChanged();
+        return state;
+      }, new CounterState());
+      useProcessor(bad);
+      useProcessor(markingOther());
+
+      dispatch(new NoOp());
+
+      assertEquals(1, errors.size());
+      assertTrue(errors.get(0) instanceof IllegalStateException);
+      assertEquals(0, slice(CounterState.class).version());
+      assertEquals(0, slice(OtherState.class).version());
+    });
+
+    it("restores the active slice after a nested dispatch", () -> {
+      var nested = new AtomicBoolean();
+      var seen = new AtomicReference<GmSlice>();
+      var p = GmProcessor.of((act, state) -> {
+        if (act instanceof Inc && nested.compareAndSet(false, true)) {
+          GmStore.dispatch(new NoOp());
+          seen.set(GmStore.currentSlice());
+        }
+        GmStore.currentSlice().markChanged();
+        return state;
+      }, new CounterState());
+      useProcessor(p);
+      var slice = slice(CounterState.class);
+
+      dispatch(new Inc());
+
+      assertSame(slice, seen.get());
+      assertTrue(slice.version() >= 1);
+    });
+
+    it("preserves processor registration order", () -> {
+      useProcessor(counter());
+      useProcessor(markingOther());
+
+      assertEquals(
+          List.of(CounterState.class, OtherState.class),
+          new ArrayList<>(snapshot().keySet())
+      );
     });
 
     it("rejects slices for unregistered state types", () -> {
