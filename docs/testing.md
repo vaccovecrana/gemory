@@ -109,9 +109,9 @@ update the registry, and ids are not unregistered when nodes leave the scene.
 ## Thread confinement
 
 The store is not thread-safe. Dispatch, `snapshot()`, `state()`, slice reads and
-subscription/listener registration must run on one thread, normally the JavaFX
-Application Thread in UI code. Gemory does not enforce this because state-only
-tests must run without a toolkit. If a probe can be called from a worker, assert
+listener registration must run on one thread, normally the JavaFX Application
+Thread in UI code. Gemory does not enforce this because state-only tests must run
+without a toolkit. If a probe can be called from a worker, assert
 `Platform.isFxApplicationThread()` at the probe boundary.
 
 `GmSlice.markChanged()` is valid only during reducer application. It throws

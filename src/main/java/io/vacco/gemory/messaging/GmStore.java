@@ -17,9 +17,9 @@ import static io.vacco.gemory.core.GmLog.*;
  *
  * <p>
  *   <b>Threading:</b> the store is not thread-safe. Confine dispatch, snapshots, slice reads
- *   and subscription registration to a single thread. In a JavaFX application this is
- *   normally the JavaFX Application Thread. State-only tests do not need a JavaFX toolkit,
- *   but they must still run on one thread.
+ *   and listener registration to a single thread. In a JavaFX application this is normally
+ *   the JavaFX Application Thread. State-only tests do not need a JavaFX toolkit, but they
+ *   must still run on one thread.
  * </p>
  *
  * <p>
