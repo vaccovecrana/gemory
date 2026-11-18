@@ -8,9 +8,10 @@ io.vacco.gemory:gemory:<LATEST_VERSION>
 
 ## Runtime introspection and automation
 
-Gemory exposes a single process-wide store for state snapshots and reducer-owned
-slice versions. Reducers decide when a slice changed; clients poll the slice and
-read state. There are no state-change listeners or action history.
+Gemory exposes a single process-wide store for state slices: each registered state
+type has a `GmSlice<S>` that holds the current state object and two version
+counters. Reducers decide when a slice changed; clients poll the slice and read
+state. There are no state-change listeners or action history.
 
 ```java
 GmStore.reset();
@@ -38,22 +39,25 @@ var toggle = (ToggleButton) root.lookup("engine-toggle").orElseThrow();
 toggle.fire(); // run on the JavaFX Application Thread
 
 if (slice.changed()) {
-  var state = GmStore.state(DyState.class);
+  var state = slice.state();
   // changed() is last-pass; use version() or changedSince(seen) for sticky checks
 }
 
 var version = slice.version();
-var snapshot = GmStore.snapshot(); // Map<Class<?>, Object>
+var snapshot = GmStore.snapshot(); // Map<Class<?>, Object>, state references from slices
 
 GmStore.reset();
 ```
 
 ### Slice semantics
 
-Each registered state type owns one `GmSlice`:
+Each registered state type owns one `GmSlice<S>` containing the state object and
+two version counters:
 
 - Reducers call `GmStore.currentSlice().markChanged()`. The call is valid only on
   the slice of the reducer currently applying; marking another slice throws.
+- `state()` reads the current state reference; `GmStore.state(Class)` is the typed
+  convenience. The owning processor writes state through `state(S)`.
 - `changed()`, `version()` and `changedSince(long)` are client reads.
 - `changed()` answers “did the most recent completed pass of this slice mark a
   change?”. A later pass that marks nothing makes it return `false`.

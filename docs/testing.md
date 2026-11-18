@@ -20,7 +20,7 @@ No JavaFX toolkit is needed, and the store has no `javafx.*` dependency:
   var slice = GmStore.slice(CounterState.class);
   GmStore.dispatch(new Inc());
 
-  assertEquals(1, GmStore.state(CounterState.class).value);
+  assertEquals(1, slice.state().value);
   assertTrue(slice.changed());
   assertEquals(1, slice.version());
 }
@@ -63,7 +63,8 @@ Platform.runLater(() -> {
   toggle.fire();
 
   if (slice.changed()) {
-    // read GmStore.state(DyState.class)
+    var state = slice.state();
+    // read the current state
   }
 });
 ```
@@ -74,11 +75,13 @@ stage, so it does not open a window during `./gradlew test`.
 
 ## Slice granularity
 
-`GmStore.slice(type)` is one counter per registered state type, not one per
-field. If a probe needs to distinguish engine changes from timeline changes,
-split state into multiple processors/state types (`EngineState`,
-`TimelineState`, etc.) or keep app-level counters inside the state. The slice is
-the coarse “this state type was marked changed” signal.
+`GmStore.slice(type)` is one state slice per registered state type, not one per
+field. The slice holds the state object and its version counters. If a probe
+needs to distinguish engine changes from timeline changes, split state into
+multiple processors/state types (`EngineState`, `TimelineState`, etc.) or keep
+app-level counters inside the state. The slice is the coarse “this state type
+was marked changed” signal. `GmStore.state(type)` is a typed convenience for
+`GmStore.slice(type).state()`.
 
 ## `changed()` versus sticky checks
 
@@ -100,7 +103,8 @@ checks.
 - does **not** retain slice versions.
 
 Re-fetch `GmStore.slice(type)` after reset, processor replacement or
-`removeProcessor(type)`. Cached slice handles become detached.
+`removeProcessor(type)`. Cached slice handles become detached; the slice holds
+the state object and its version counters.
 
 If a test installs a custom exception handler, reinstall it after `reset()`.
 
