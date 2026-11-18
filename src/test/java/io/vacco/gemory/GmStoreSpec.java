@@ -215,7 +215,9 @@ public class GmStoreSpec {
       dispatch(new Inc());
 
       assertSame(slice, seen.get());
-      assertTrue(slice.version() >= 1);
+      // Nested dispatch from a reducer is unsupported; this pins the current
+      // active-slice restoration and single-increment behavior.
+      assertEquals(1, slice.version());
     });
 
     it("preserves processor registration order", () -> {

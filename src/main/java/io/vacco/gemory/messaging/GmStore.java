@@ -230,9 +230,9 @@ public class GmStore {
    * Resets the store to a clean state.
    *
    * <p>
-   *   Removes processors and weak action listeners and restores the default exception
-   *   handler. The store remains reusable after this call. Slice handles cached by clients
-   *   become detached; re-fetch them after reset.
+   *   Removes processors and weak action listeners, clears the active slice and restores the
+   *   default exception handler. The store remains reusable after this call. Slice handles
+   *   cached by clients become detached; re-fetch them after reset.
    * </p>
    *
    * <p>
@@ -242,6 +242,7 @@ public class GmStore {
   public static void reset() {
     actIdx.clear();
     prcIdx.clear();
+    activeSlice = null;
     exceptionHandler = defaultExceptionHandler;
   }
 
@@ -276,13 +277,16 @@ public class GmStore {
     try {
       for (GmProcessor<?> p : prcIdx.values()) {
         activeSlice = p.slice();
+        Exception failure = null;
         try {
           p.apply(act);
         } catch (Exception e) {
-          activeSlice = previous;
-          report(e);
+          failure = e;
         } finally {
           activeSlice = previous;
+        }
+        if (failure != null) {
+          report(failure);
         }
       }
     } finally {
