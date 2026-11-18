@@ -160,8 +160,6 @@ public class GmContextSpec {
                 return fst;
               })
               .apply(act)
-          // ^----- MATCHER ABOVE
-          // GmSelector.combineSelectors(new GmSelector<>(Function.identity(), , (fst0, fst1) -> fst1))
           , new FooState()
       ));
     }

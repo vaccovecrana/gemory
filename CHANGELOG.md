@@ -34,6 +34,14 @@
 - `GmContext` throws `IllegalArgumentException` for duplicate, null or blank
   explicit ids.
 
+### Removed
+
+- `GmSelector` and `GmSelector.combineSelectors` were removed. The helper
+  composed sub-reducers into a single root state and does not support
+  per-state-type slice versions. Use separate state types/processors with
+  `GmStore.slice(...)` instead. This is a breaking public API removal; there are
+  no usages in Gemory or the known downstream applications.
+
 ### Notes
 
 - `GmSlice.changed()` reports whether the **most recent completed pass** marked
