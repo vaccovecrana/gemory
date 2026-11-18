@@ -36,6 +36,7 @@ tasks.register<JavaExec>("runDemo") {
   dependsOn(tasks.testClasses)
 
   val testRuntime = sourceSets["test"].runtimeClasspath
+  // JavaFX must be on --module-path for Application.launch; keep it off the classpath.
   val javaFxJars = testRuntime.filter { it.name.startsWith("javafx-") && it.name.endsWith(".jar") }
   classpath = testRuntime.filter { !(it.name.startsWith("javafx-") && it.name.endsWith(".jar")) }
   mainClass.set("io.vacco.gemory.GmSpecShell")

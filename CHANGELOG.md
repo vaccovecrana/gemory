@@ -5,9 +5,11 @@
 ### Added
 
 - `GmSlice`, a reducer-owned version counter for each registered state type:
-  - `markChanged()` for reducers;
+  - `GmStore.currentSlice().markChanged()` for reducers;
   - `changed()`, `version()` and `changedSince(long)` for clients.
 - `GmStore.slice(Class)` returns the live slice handle for a state type.
+- `GmStore.currentSlice()` returns the slice of the reducer currently applying;
+  marking any other slice throws.
 - `GmStore.snapshot()` returns an immutable map of every registered state
   reference, and `GmStore.state(Class)` reads one typed state.
 - `GmStore.removeProcessor(Class)` and `GmStore.reset()` for test isolation
@@ -33,14 +35,16 @@
   `GmStore.setExceptionHandler(...)`.
 - `GmContext` throws `IllegalArgumentException` for duplicate, null or blank
   explicit ids.
+- Processors and action listeners are kept in registration order, so dispatch and
+  `snapshot()` ordering is deterministic for the single-threaded store.
 
 ### Removed
 
-- `GmSelector` and `GmSelector.combineSelectors` were removed. The helper
-  composed sub-reducers into a single root state and does not support
+- **Breaking:** `GmSelector` and `GmSelector.combineSelectors` were removed. The
+  helper composed sub-reducers into a single root state and does not support
   per-state-type slice versions. Use separate state types/processors with
-  `GmStore.slice(...)` instead. This is a breaking public API removal; there are
-  no usages in Gemory or the known downstream applications.
+  `GmStore.slice(...)` instead. There are no usages in Gemory or the known
+  downstream applications.
 
 ### Notes
 
@@ -51,8 +55,12 @@
   processors/state types if a probe needs finer granularity.
 - A reducer that throws rolls the slice version back, but in-place state
   mutations performed before the throw are not restored.
-- `GmSlice.markChanged()` is valid only during reducer application; calling it
-  from a client or action listener throws `IllegalStateException`.
+- Every state-changing reducer branch must call
+  `GmStore.currentSlice().markChanged()`. Forgetting is silent: state updates but
+  the slice does not move.
+- `GmStore.currentSlice()` and `GmSlice.markChanged()` are valid only during
+  reducer application; calling them from a client or action listener throws
+  `IllegalStateException`.
 - Existing static APIs and signatures remain unchanged. `GmStore.on(...)`
   listeners are still weak.
 - The store remains a single static instance per JVM. It is not thread-safe;

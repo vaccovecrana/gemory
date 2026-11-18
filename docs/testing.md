@@ -12,7 +12,7 @@ No JavaFX toolkit is needed, and the store has no `javafx.*` dependency:
   GmStore.useProcessor(GmProcessor.of((action, state) -> {
     if (action instanceof Inc) {
       state.value++;
-      GmStore.slice(CounterState.class).markChanged();
+      GmStore.currentSlice().markChanged();
     }
     return state;
   }, new CounterState()));
@@ -29,6 +29,17 @@ No JavaFX toolkit is needed, and the store has no `javafx.*` dependency:
 The store is a single static instance per JVM. Run stateful tests sequentially
 and call `GmStore.reset()` in setup and teardown; do not share state between
 parallel test classes.
+
+## Reducer marking
+
+- Every reducer branch that changes state must call
+  `GmStore.currentSlice().markChanged()`.
+- The call is valid only on the slice of the reducer currently applying. Marking
+  another processor’s slice throws `IllegalStateException`.
+- Forgetting to mark is silent: the state updates, but `changed()` and
+  `version()` do not move.
+- Calling `markChanged()` more than once in one pass counts once.
+- `GmStore.currentSlice()` and `markChanged()` throw outside reducer application.
 
 ## JavaFX component tests
 
@@ -106,6 +117,13 @@ fail unless you either:
 Ids are captured when a node is added; changing `setId(...)` later does not
 update the registry, and ids are not unregistered when nodes leave the scene.
 
+After a subtree rebuild, re-capture the `GmRoot` returned by that build. A
+cached `GmRoot` keeps pointing at the old registry and goes stale.
+
+If a node’s `setId(...)` value is a domain key rather than an automation handle,
+do not rely on auto-registration: use explicit `c.node("ui/...", node)` or a
+namespaced automation id so domain ids do not enter the registry.
+
 ## Thread confinement
 
 The store is not thread-safe. Dispatch, `snapshot()`, `state()`, slice reads and
@@ -114,8 +132,9 @@ Thread in UI code. Gemory does not enforce this because state-only tests must ru
 without a toolkit. If a probe can be called from a worker, assert
 `Platform.isFxApplicationThread()` at the probe boundary.
 
-`GmSlice.markChanged()` is valid only during reducer application. It throws
-`IllegalStateException` outside a reducer, including from action listeners.
+`GmStore.currentSlice()` and `GmSlice.markChanged()` are valid only during
+reducer application. They throw `IllegalStateException` outside a reducer,
+including from action listeners.
 
 ## Non-`Node` controls
 
@@ -123,6 +142,10 @@ Only `Node` ids are registered. `MenuItem`/`CheckMenuItem` and other non-`Node`
 controls cannot be looked up through `GmRoot` yet. For menu-driven probes, have
 the menu handler dispatch an action and dispatch the same action directly from
 the test/probe.
+
+Auto-registration captures any non-blank `setId(...)`. In apps that use ids as
+domain keys (for example 3D object ids), prefer explicit `c.node("ui/...", node)`
+or namespaced automation ids so domain keys do not become automation handles.
 
 ## Partial mutations on failure
 
