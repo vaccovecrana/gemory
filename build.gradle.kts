@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "io.vacco.gemory"
-version = "0.6.0"
+version = "0.7.0"
 
 configure<io.vacco.oss.gitflow.GsPluginProfileExtension> {
   orgConfigUrl("https://raw.githubusercontent.com/vaccovecrana/org-config/refs/heads/main/vacco-oss-java-25.json")
@@ -24,4 +24,8 @@ configure<io.vacco.cphell.ChPluginExtension> {
 javafx {
   version = "27"
   modules("javafx.controls")
+}
+
+tasks.test {
+  systemProperty("gemory.test.desktop", System.getProperty("gemory.test.desktop", "true"))
 }
