@@ -62,12 +62,6 @@ public class GmStore {
   private static GmSlice<?> activeSlice;
 
   /**
-   * Creates a store instance. All store state is static; this constructor exists for source
-   * and binary compatibility with earlier releases.
-   */
-  public GmStore() { }
-
-  /**
    * Registers a weak action listener for the exact action type.
    *
    * <p>
